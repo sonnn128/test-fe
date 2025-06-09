@@ -1,29 +1,64 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-// Thêm 'Image' và 'Space' từ antd
-import { Table, Spin, Alert, Typography, Button, Input, Space, Image } from 'antd'; 
-import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { 
+  Table, Spin, Alert, Typography, Button, Input, Space, Image, 
+  Layout, Card, Tooltip 
+} from 'antd'; 
+import { DownloadOutlined, SearchOutlined, YoutubeFilled } from '@ant-design/icons';
 import Papa from 'papaparse';
 import './App.css';
 
+const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 // --- CẤU HÌNH CỦA BẠN ---
-// -------------------------
-
 const GOOGLE_SHEET_CSV_URL = import.meta.env.VITE_GOOGLE_SHEET_CSV_URL;
 const LINK4M_API_KEY = import.meta.env.VITE_LINK4M_API_KEY;
 const LOGO_URL = import.meta.env.VITE_LOGO_URL;
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
+const YOUTUBE_TUTORIAL_URL = 'https://youtu.be/A-aGo07zcD8?si=L8_tmK5kw3vA9qHy';
+// -------------------------
 
 function normalizeString(str) {
-  return str
-    .trim()
-    .toLowerCase() // 1. Chuyển thành chữ thường
-    .normalize("NFD") // 2. Chuẩn hóa về dạng NFD (chuỗi ký tự + dấu tách rời)
-    .replace(/[\u0300-\u036f]/g, "") // 3. Loại bỏ tất cả các dấu
-    .replace(/đ/g, "d"); // 4. Chuyển đổi chữ 'đ' thành 'd'
+    if (!str) return '';
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d");
 }
+const AppHeader = () => (
+  <Header className="app-header">
+    <div className="header-content">
+      {/* ===== THAY ĐỔI Ở ĐÂY ===== */}
+      {/* Bỏ <Space>, thay bằng <div> với className để style bằng CSS */}
+      <div className="logo-and-title">
+        <Image height={40} src={LOGO_URL} preview={false} alt="Logo" />
+        <Title level={3} style={{ marginBottom: 0, marginLeft: '12px' }}>
+          Thư Viện Tài Liệu
+        </Title> 
+      </div>
+      {/* =========================== */}
+      
+      <Tooltip title="Xem video hướng dẫn tải tài liệu">
+        <Button
+          className="youtube-button pulse"
+          type="primary"
+          danger
+          icon={<YoutubeFilled />}
+          size="large"
+          href={YOUTUBE_TUTORIAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Hướng Dẫn
+        </Button>
+      </Tooltip>
+    </div>
+  </Header>
+);
+
 
 function App() {
   const [originalData, setOriginalData] = useState([]);
@@ -33,7 +68,7 @@ function App() {
   const [isShortening, setIsShortening] = useState(null);
   const [searchText, setSearchText] = useState('');
 
-  // Hàm gọi API của link4m
+  // Các hàm logic (handleDownloadClick, useEffect, handleSearch...) giữ nguyên không đổi
   const handleDownloadClick = async (driveLink, recordKey) => {
     setIsShortening(recordKey);
     try {
@@ -55,7 +90,6 @@ function App() {
     }
   };
 
-  // Tải và xử lý dữ liệu
   useEffect(() => {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
       download: true,
@@ -87,37 +121,29 @@ function App() {
     });
   }, []);
 
-  // Hàm tìm kiếm
-    const handleSearch = () => {
+  const handleSearch = () => {
     if (!searchText) {
       setFilteredData(originalData);
       return;
     }
-    // Chuẩn hóa từ khóa tìm kiếm
     const normalizedSearchText = normalizeString(searchText);
-
     const result = originalData.filter(item => {
-      // Chuẩn hóa tên học phần trước khi so sánh
       const normalizedItemName = normalizeString(item.tenHocPhan);
       return normalizedItemName.includes(normalizedSearchText);
     });
-
     setFilteredData(result);
   };
   
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
+  const handleKeyPress = (e) => { if (e.key === 'Enter') { handleSearch(); } };
 
+  // Cột của bảng
   const columns = [
-    { title: 'STT', dataIndex: 'stt', key: 'stt', width: '10%', align: 'center' },
-    { title: 'Tên Học Phần', dataIndex: 'tenHocPhan', key: 'tenHocPhan', width: '60%' },
+    { title: 'STT', dataIndex: 'stt', key: 'stt', width: 80, align: 'center' },
+    { title: 'Tên Học Phần', dataIndex: 'tenHocPhan', key: 'tenHocPhan' },
     {
-      title: 'Tải xuống ( Có quảng cáo)',
+      title: 'Tải xuống (Có quảng cáo)',
       key: 'action',
-      width: '30%',
+      width: 180,
       align: 'center',
       render: (_, record) => (
         <Button type="primary" icon={<DownloadOutlined />} loading={isShortening === record.key} onClick={() => handleDownloadClick(record.linkDrive, record.key)}>
@@ -127,47 +153,42 @@ function App() {
     },
   ];
 
-  if (loading) return <div className="container loading-container"><Spin size="large" tip="Đang tải danh sách tài liệu..." /></div>;
-  if (error) return <div className="container"><Alert message="Lỗi" description={error} type="error" showIcon /></div>;
+  if (loading) return <div className="app-loading"><Spin size="large" tip="Đang tải danh sách tài liệu..." /></div>;
+  if (error) return <div className="app-container"><Alert message="Lỗi" description={error} type="error" showIcon /></div>;
 
   return (
-    <div className="container">
-      {/* ===== PHẦN TIÊU ĐỀ ĐÃ ĐƯỢC CẬP NHẬT ===== */}
-      <Space align="center" size="large">
-        <Image
-          height={60} // Điều chỉnh chiều cao của logo
-          src={LOGO_URL}
-          preview={false} // Tắt chức năng xem trước ảnh khi bấm vào
-          alt="Logo trường"
-        />
-        <Title level={2} style={{ marginBottom: 0 }}>Thư Viện Tài Liệu</Title>
-      </Space>
-      <Text type="secondary" style={{ display: 'block', marginTop: '8px' }}>
-        Tổng hợp tài liệu các học phần, đề thi và bài giảng
-      </Text>
-      {/* ========================================= */}
-      
-      <Space.Compact style={{ width: '60%', marginTop: '24px' }}>
-        <Input 
-          placeholder="Nhập tên học phần cần tìm..." 
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          onKeyPress={handleKeyPress}
-          allowClear // Thêm nút xóa nhanh
-        />
-        <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
-          Tìm kiếm
-        </Button>
-      </Space.Compact>
-      
-      <Table 
-        columns={columns} 
-        dataSource={filteredData}
-        pagination={{ pageSize: 15, showSizeChanger: false }}
-        bordered
-        style={{ marginTop: '16px' }}
-      />
-    </div>
+    <Layout className="app-layout">
+      <AppHeader />
+      <Content className="app-content">
+        <Card>
+          <div className="search-bar-container">
+            <Title level={4}>Tìm kiếm tài liệu</Title>
+            <Space.Compact style={{ width: '100%', maxWidth: '500px' }}>
+              <Input 
+                placeholder="Nhập tên học phần..." 
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                allowClear
+                size="large"
+              />
+              <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch} size="large">
+                Tìm kiếm
+              </Button>
+            </Space.Compact>
+          </div>
+          
+          <Table 
+            columns={columns} 
+            dataSource={filteredData}
+            pagination={{ pageSize: 15, showSizeChanger: false }}
+            bordered
+            scroll={{ x: 'max-content' }} // Cho phép cuộn ngang trên mobile
+            style={{ marginTop: '24px' }}
+          />
+        </Card>
+      </Content>
+    </Layout>
   );
 }
 
