@@ -9,10 +9,12 @@ import './App.css';
 const { Title, Text } = Typography;
 
 // --- CẤU HÌNH CỦA BẠN ---
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpYPEHUU9LZN3fkqp1yNVkdwvYUIIOk6c43SXLNcY7K8DxKl4e0Zm9vpD6xQgFYmT45d2odnEWWGFH/pub?gid=0&single=true&output=csv'; 
-const LINK4M_API_KEY = '6845c42c146e9a23ab61d3c2'; // API Key của bạn
-const LOGO_URL = 'https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-dai-hoc-cong-nghiep-ha-noi-inkythuatso-01-21-16-44-16.jpg';
 // -------------------------
+
+const GOOGLE_SHEET_CSV_URL = import.meta.env.VITE_GOOGLE_SHEET_CSV_URL;
+const LINK4M_API_KEY = import.meta.env.VITE_LINK4M_API_KEY;
+const LOGO_URL = import.meta.env.VITE_LOGO_URL;
+const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 function App() {
   const [originalData, setOriginalData] = useState([]);
@@ -27,7 +29,7 @@ function App() {
     setIsShortening(recordKey);
     try {
       const encodedDriveLink = encodeURIComponent(driveLink);
-      const apiUrl = `http://localhost:8080/api/shorten?api=${LINK4M_API_KEY}&url=${encodedDriveLink}`;
+      const apiUrl = `${BACKEND_API_URL}/api/shorten?api=${LINK4M_API_KEY}&url=${encodedDriveLink}`;
       const response = await fetch(apiUrl);
       if (!response.ok) throw new Error(`Yêu cầu API thất bại (status: ${response.status})`);
       const result = await response.json();
