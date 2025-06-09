@@ -1,0 +1,28 @@
+body {
+  background-color: #f0f2f5;
+}
+
+.container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 40px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Tùy chỉnh hover cho icon */
+a:hover .anticon-download {
+  transform: scale(1.25);
+  transition: transform 0.2s ease-in-out;
+  color: #096dd9;
+}
