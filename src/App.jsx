@@ -18,6 +18,7 @@ const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 function normalizeString(str) {
   return str
+    .trim()
     .toLowerCase() // 1. Chuyển thành chữ thường
     .normalize("NFD") // 2. Chuẩn hóa về dạng NFD (chuỗi ký tự + dấu tách rời)
     .replace(/[\u0300-\u036f]/g, "") // 3. Loại bỏ tất cả các dấu
