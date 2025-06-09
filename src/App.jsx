@@ -16,6 +16,14 @@ const LINK4M_API_KEY = import.meta.env.VITE_LINK4M_API_KEY;
 const LOGO_URL = import.meta.env.VITE_LOGO_URL;
 const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
+function normalizeString(str) {
+  return str
+    .toLowerCase() // 1. Chuyển thành chữ thường
+    .normalize("NFD") // 2. Chuẩn hóa về dạng NFD (chuỗi ký tự + dấu tách rời)
+    .replace(/[\u0300-\u036f]/g, "") // 3. Loại bỏ tất cả các dấu
+    .replace(/đ/g, "d"); // 4. Chuyển đổi chữ 'đ' thành 'd'
+}
+
 function App() {
   const [originalData, setOriginalData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -79,15 +87,20 @@ function App() {
   }, []);
 
   // Hàm tìm kiếm
-  const handleSearch = () => {
+    const handleSearch = () => {
     if (!searchText) {
       setFilteredData(originalData);
       return;
     }
-    const lowercasedFilter = searchText.toLowerCase();
-    const result = originalData.filter(item =>
-      item.tenHocPhan.toLowerCase().includes(lowercasedFilter)
-    );
+    // Chuẩn hóa từ khóa tìm kiếm
+    const normalizedSearchText = normalizeString(searchText);
+
+    const result = originalData.filter(item => {
+      // Chuẩn hóa tên học phần trước khi so sánh
+      const normalizedItemName = normalizeString(item.tenHocPhan);
+      return normalizedItemName.includes(normalizedSearchText);
+    });
+
     setFilteredData(result);
   };
   
